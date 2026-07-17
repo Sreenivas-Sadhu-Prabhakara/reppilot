@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RepPilot — Reputation Autopilot</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231e5741'/%3E%3Cpath d='M16 5l3.2 6.9 7.3.8-5.4 5 1.5 7.3L16 21.2 9.4 25l1.5-7.3-5.4-5 7.3-.8z' fill='%23eba413'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="7" fill="#1e5741"/>
+        <path d="M16 5l3.2 6.9 7.3.8-5.4 5 1.5 7.3L16 21.2 9.4 25l1.5-7.3-5.4-5 7.3-.8z" fill="#eba413"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-name">RepPilot</span>
+        <span class="brand-tag">Reputation autopilot</span>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab is-active" data-tab="inbox" role="tab" aria-selected="true">Inbox <span class="tab-count" id="inboxCount" hidden></span></button>
+      <button class="tab" data-tab="campaigns" role="tab" aria-selected="false">Campaigns</button>
+      <button class="tab" data-tab="outbox" role="tab" aria-selected="false">Outbox <span class="tab-count" id="outboxCount" hidden></span></button>
+      <button class="tab" data-tab="digest" role="tab" aria-selected="false">Weekly digest</button>
+    </nav>
+    <div class="topbar-meta">
+      <span class="pill pill-mock" title="All integrations run as deterministic mocks — no keys needed">Mock mode</span>
+      <span class="pill pill-plan">₹999/mo</span>
+    </div>
+  </div>
+</header>
+
+<!-- Connect bar -->
+<section class="connect" id="connectSection">
+  <div class="connect-inner">
+    <form id="connectForm" class="connect-form" autocomplete="off">
+      <div class="field">
+        <label for="bizName">Business name</label>
+        <input id="bizName" name="bizName" placeholder="Meera&rsquo;s Salon" required>
+      </div>
+      <div class="field">
+        <label for="bizCity">City</label>
+        <input id="bizCity" name="bizCity" placeholder="Pune" list="cityList" required>
+        <datalist id="cityList">
+          <option>Mumbai</option><option>Delhi</option><option>Bengaluru</option>
+          <option>Hyderabad</option><option>Chennai</option><option>Pune</option>
+          <option>Kolkata</option><option>Ahmedabad</option><option>Jaipur</option>
+          <option>Kochi</option><option>Indore</option><option>Lucknow</option>
+        </datalist>
+      </div>
+      <div class="field">
+        <label for="bizCategory">Category</label>
+        <select id="bizCategory" name="bizCategory">
+          <option>Salon</option>
+          <option>Clinic</option>
+          <option>Restaurant</option>
+          <option>Cafe</option>
+          <option>Gym</option>
+          <option>Boutique</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" id="connectBtn">Connect profile</button>
+    </form>
+    <div class="profile-ribbon" id="profileRibbon" hidden>
+      <div class="ribbon-main">
+        <span class="ribbon-name" id="ribbonName"></span>
+        <span class="ribbon-sub" id="ribbonSub"></span>
+      </div>
+      <div class="ribbon-stats">
+        <div class="ribbon-stat"><span class="stat-num serif" id="ribbonRating"></span><span class="stat-label">rating</span></div>
+        <div class="ribbon-stat"><span class="stat-num serif" id="ribbonReviews"></span><span class="stat-label">reviews</span></div>
+        <div class="ribbon-stat"><span class="stat-num serif" id="ribbonUnanswered"></span><span class="stat-label">unanswered</span></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="reconnectBtn">Switch business</button>
+    </div>
+  </div>
+</section>
+
+<main class="main">
+
+  <!-- ======== INBOX ======== -->
+  <section class="panel is-active" id="panel-inbox">
+    <div class="inbox-toolbar" id="inboxToolbar" hidden>
+      <div class="chip-row" id="filterChips" role="group" aria-label="Reply status filter">
+        <button class="chip is-active" data-filter="">All</button>
+        <button class="chip" data-filter="unanswered">Unanswered</button>
+        <button class="chip" data-filter="answered">Answered</button>
+      </div>
+      <div class="toolbar-right">
+        <select id="starFilter" class="select-sm" aria-label="Filter by stars">
+          <option value="">All stars</option>
+          <option value="5">5★ only</option>
+          <option value="4">4★ only</option>
+          <option value="3">3★ only</option>
+          <option value="2">2★ only</option>
+          <option value="1">1★ only</option>
+        </select>
+        <div class="seg" role="group" aria-label="Reply tone">
+          <button class="seg-btn is-active" data-tone="Professional">Professional</button>
+          <button class="seg-btn" data-tone="Warm">Warm</button>
+          <button class="seg-btn" data-tone="Brief">Brief</button>
+        </div>
+        <div class="seg" role="group" aria-label="Reply language">
+          <button class="seg-btn is-active" data-lang="English">English</button>
+          <button class="seg-btn" data-lang="Hinglish">Hinglish</button>
+        </div>
+        <button class="btn btn-primary btn-sm" id="draftAllBtn">Draft all unanswered</button>
+      </div>
+    </div>
+    <div id="reviewList" class="review-list"></div>
+  </section>
+
+  <!-- ======== CAMPAIGNS ======== -->
+  <section class="panel" id="panel-campaigns">
+    <div class="campaigns-grid">
+      <div class="card">
+        <h2 class="card-title">New review-request campaign</h2>
+        <p class="card-hint">Paste your customer list — one <code>Name, +91-98xxxxxxxx</code> per line. Each customer gets a personalized WhatsApp message with your review link.</p>
+        <form id="campaignForm">
+          <div class="field">
+            <label for="campaignName">Campaign name</label>
+            <input id="campaignName" placeholder="Diwali regulars" required>
+          </div>
+          <div class="field">
+            <label for="campaignCustomers">Customers</label>
+            <textarea id="campaignCustomers" rows="7" placeholder="Priya Sharma, +91-9812345678&#10;Rohan Verma, +91-9822001133&#10;Sneha Iyer, +91-9876543210" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" id="campaignBtn">Create &amp; queue messages</button>
+        </form>
+      </div>
+      <div>
+        <h2 class="section-title">Past campaigns</h2>
+        <div id="campaignList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== OUTBOX ======== -->
+  <section class="panel" id="panel-outbox">
+    <h2 class="section-title">WhatsApp outbox <span class="muted">— queued by the mock sender; set <code>AISENSY_API_KEY</code> to go live</span></h2>
+    <div id="outboxList"></div>
+  </section>
+
+  <!-- ======== DIGEST ======== -->
+  <section class="panel" id="panel-digest">
+    <div id="digestContent"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span>RepPilot · made for Indian local businesses · all data is mock &amp; offline</span>
+</footer>
+
+<div id="toastHost" class="toast-host" aria-live="polite"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>
